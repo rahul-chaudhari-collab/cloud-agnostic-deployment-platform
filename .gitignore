@@ -1,0 +1,8 @@
+*.tfstate
+*.tfstate.*
+.terraform/
+.env
+.env.*
+!.env.example
+*.log
+kubeconfig

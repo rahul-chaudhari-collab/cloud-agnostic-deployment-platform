@@ -1,0 +1,78 @@
+# DEMO BASELINE ONLY. For production use a managed PostgreSQL service
+# and a managed/durable Redis-compatible service with backups, auth and TLS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: immverse
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels: { app: redis }
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.4-alpine
+          ports: [{ containerPort: 6379 }]
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: immverse
+spec:
+  selector: { app: redis }
+  ports: [{ port: 6379, targetPort: 6379 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: immverse
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432 }]
+          env:
+            - name: POSTGRES_DB
+              value: app
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1000m", memory: "1Gi" }
+      volumes:
+        - name: data
+          emptyDir: {} # Demo only; data is lost when the Pod is recreated.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: immverse
+spec:
+  selector: { app: postgres }
+  ports: [{ port: 5432, targetPort: 5432 }]
