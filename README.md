@@ -38,5 +38,8 @@ The actual application image and its environment variable contract were not supp
 5. Do not apply Terraform or create paid AWS resources without reviewing the plan and cost.
 6. Add screenshots/logs only for tests actually performed.
 
-## 5. Interview honesty
-Be ready to explain which items are working code, which are design decisions, and which remain unverified. This repo intentionally avoids claiming that production-scale availability, 15x scaling, failover, or rollback was proven.
+   
+## 5. Implementation Status
+The repository currently contains Kubernetes configuration templates, a CI workflow template, and infrastructure and architecture documentation.
+The next steps are to validate the deployment workflow, test rollback behavior, evaluate autoscaling, and verify recovery procedures.
+Components that have not been tested in a running environment will be identified as pending validation.
