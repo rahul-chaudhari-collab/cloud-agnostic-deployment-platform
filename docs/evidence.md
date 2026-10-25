@@ -1,8 +1,8 @@
 # Evidence and Validation Report
 
-**Project:** Cloud-Agnostic, Automated, Zero-Downtime Deployment Platform
-**Date:** 26 October 2026
-**Purpose:** Record the validation performed so far and clearly identify the components that remain unverified.
+Project: Cloud-Agnostic, Automated, Zero-Downtime Deployment Platform
+Date: 26 October 2026
+Purpose: Record the validation performed so far and clearly identify the components that remain unverified.
 
 ## 1. Local Validation Results
 
