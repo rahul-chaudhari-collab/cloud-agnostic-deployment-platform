@@ -1,3 +1,4 @@
+
 name: validate-build-scan
 
 on:
@@ -14,48 +15,63 @@ permissions:
 
 jobs:
   validate:
+    name: Validate Repository and Kubernetes Manifests
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Validate repository structure
         run: |
           test -f README.md
           test -f docs/architecture.md
           test -d k8s
-      - name: YAML syntax check
-        run: |
-          python - <<'PY'
-          import pathlib
-          try:
-              import yaml
-          except ImportError:
-              print("PyYAML unavailable; structural check only")
-              raise SystemExit(0)
-          for p in pathlib.Path("k8s").glob("*.yaml"):
-              list(yaml.safe_load_all(p.read_text()))
-              print("Parsed", p)
-          PY
+          test -f .github/scripts/validate-k8s.sh
+          echo "Repository structure validation passed."
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install YAML validation dependency
+        run: python -m pip install PyYAML
+
+      - name: Validate Kubernetes manifests
+        run: bash .github/scripts/validate-k8s.sh
 
   image-build-and-scan-template:
+    name: Build and Scan Application Image
     if: ${{ vars.BUILD_REAL_APP == 'true' }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build application image
+        uses: docker/build-push-action@v6
         id: build
         with:
           context: .
           push: false
           tags: immverse-assignment:${{ github.sha }}
+
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: immverse-assignment:${{ github.sha }}
           format: table
-          exit-code: '1'
+          exit-code: "1"
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Explain digest promotion requirement
-        run: echo "Production promotion should use the same immutable image digest across environments."
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      - name: Explain immutable artifact promotion
+        run: |
+          echo "Production promotion should use the same immutable image digest across environments."
+          echo "Do not rebuild the application separately for dev, stage, and production."
