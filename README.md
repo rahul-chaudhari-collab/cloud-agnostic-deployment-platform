@@ -91,6 +91,4 @@ Progressive traffic shifting with metric-based promotion and automated rollback.
 Application-supported graceful shutdown and worker job draining.
 Automated database migration checks, backup validation, and restore drills.
 Load testing, SLO dashboards, alert validation, tenant isolation, and regional failover testing.
-7. Interview Honesty
 
-Be prepared to distinguish implemented code, validated behavior, design decisions, and unverified work. This repository does not claim that production-scale availability, 15x scaling, zero-downtime deployment, disaster recovery, or automatic rollback has been proven.
