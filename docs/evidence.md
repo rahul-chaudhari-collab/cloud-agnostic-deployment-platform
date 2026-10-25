@@ -41,7 +41,7 @@ The GitHub Actions workflow executed the `validate-build-scan` job successfully.
 
 **Limitation:** The application image build and security scan job was skipped because the actual application build context was unavailable and the workflow's `BUILD_REAL_APP` variable was not enabled.
 
-A successful repository validation job does not prove that the actual application can be built, deployed, or scanned.
+successful repository validation job does not prove that the actual application can be built, deployed, or scanned.
 
 ### 1.4 Kubernetes YAML Syntax — Passed
 
