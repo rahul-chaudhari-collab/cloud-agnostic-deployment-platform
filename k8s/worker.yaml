@@ -1,37 +1,62 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worker
   namespace: immverse
+  labels:
+    app: worker
 spec:
   replicas: 2
+
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
+
   selector:
     matchLabels:
       app: worker
+
   template:
     metadata:
       labels:
         app: worker
+
     spec:
       terminationGracePeriodSeconds: 75
+
       containers:
         - name: worker
           image: REPLACE_WITH_REGISTRY/immverse-worker:REPLACE_WITH_TAG
+          imagePullPolicy: IfNotPresent
+
           env:
             - name: REDIS_URL
               value: redis://redis:6379
+
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: database-url
+
             - name: JOB_DRAIN_TIMEOUT_SECONDS
               value: "60"
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 5
+
           resources:
-            requests: { cpu: "250m", memory: "256Mi" }
-            limits: { cpu: "1000m", memory: "768Mi" }
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "768Mi"
