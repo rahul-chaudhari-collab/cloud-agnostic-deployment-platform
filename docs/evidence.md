@@ -65,15 +65,14 @@ k8s\worker.yaml
 ```
 
 **Conclusion:** All five Kubernetes YAML files passed local syntax parsing.
-
-OAOAOAOAOAOAOAOAOAOA**Limitation:** Syntax validation alone does not establish that the manifests are semantically valid for a particular cluster, that all referenced images exist, or that the workloads can start successfully.
+**Limitation:** Syntax validation alone does not establish that the manifests are semantically valid for a particular cluster, that all referenced images exist, or that the workloads can start successfully.
 
 ---
 
 ## 2. Components Implemented in the Starter Repository
-OAOAOAOAOAOAOAOAOAOA
+
 The following starter artifacts are present in the repository:
-OAOAOAOAOAOAOAOAOAOA
+
 | Component                  | Current status | Notes                                                                            |
 | -------------------------- | -------------- | -------------------------------------------------------------------------------- |
 | Architecture documentation | Created        | Documents the proposed platform architecture and design decisions.               |
