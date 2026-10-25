@@ -1,42 +1,96 @@
 # Cloud-Agnostic, Automated, Zero-Downtime Deployment Platform
 
-**Submission status:** starter implementation + design. Read the status labels carefully. Any component not executed and evidenced is marked **DESIGNED / NOT VERIFIED**. Do not present unrun tests as successful.
+**Submission status:** Starter implementation + design. Any component not executed and evidenced is marked **DESIGNED / NOT VERIFIED**. Do not present unrun tests as successful.
 
 ## 1. Scope
-This repository provides a reviewable baseline for the ImmverseAI DevOps assignment:
-- Kubernetes manifests for an API, worker, Redis and PostgreSQL.
-- GitHub Actions CI workflow for validation, image build, vulnerability scan and image digest output.
-- Terraform starter for AWS networking/compute is intentionally not auto-applied.
-- Architecture and operational runbooks for progressive delivery, database migrations, scaling, recovery, tenancy and cost.
-- Local Kubernetes target can be kind or k3d; a second cloud target requires provider-specific modules and validation.
 
-## 2. Application contract
+This repository provides a reviewable baseline for the ImmverseAI DevOps assignment:
+
+- Kubernetes manifests for the API, worker, Redis, and PostgreSQL.
+- GitHub Actions workflow for repository checks and Kubernetes manifest structural validation.
+- Conditional application image build and vulnerability scan template.
+- Terraform starter for AWS networking/compute; infrastructure is not automatically applied.
+- Architecture and operational documentation for progressive delivery, database migrations, scaling, recovery, tenancy, and cost.
+- Local Kubernetes validation using Minikube; kind/k3d and a second cloud target require additional validation and implementation.
+
+## 2. Application Contract
+
 The supplied application is treated as a black box:
-- API listens on `8080`; endpoints `/healthz`, `/readyz`, `/metrics`.
+
+- API listens on port `8080` and exposes `/healthz`, `/readyz`, and `/metrics`.
 - Worker consumes Redis jobs; jobs can take up to 60 seconds.
 - PostgreSQL migrations run at startup; some migrations are not backward-compatible.
 - Redis queue and PostgreSQL persistence are required.
 
-The actual application image and its environment variable contract were not supplied in this starter. Replace `REPLACE_WITH_REGISTRY/immverse-api:REPLACE_WITH_TAG` and worker image with the actual image before deployment. Secret values must be provided by a secrets manager, not committed to Git.
+The actual application source and its environment variable contract were not supplied in this starter. Replace the API and worker image placeholders with real image references before deployment. Supply secrets through an approved secrets manager; never commit secret values to Git.
 
-## 3. What is implemented vs designed
+## 3. Implementation and Verification Status
+
 | Area | Status |
 |---|---|
-| Kubernetes resource templates | Implemented as templates; not runtime-tested |
-| CI workflow | Implemented as a workflow template; requires repository secrets and a real application Dockerfile |
+| Kubernetes manifests | Templates created; structural validation passed |
+| Kubernetes API server dry-run | Worker manifest accepted by server-side dry-run |
+| Local Kubernetes | Minikube test cluster and generic NGINX test workload validated |
+| GitHub Actions | Repository and Kubernetes manifest validation workflow passed |
+| Application image build and scan | Conditional template; actual application build and scan not verified |
 | Terraform | Starter/design only; not applied |
 | Progressive delivery and automatic rollback | Designed in `docs/architecture.md`; not executed |
-| 15x load test, zero-error evidence, restore test | Not run; must not be claimed |
-| Multi-cloud dedicated tenant and EU data residency | Design only |
-| Cost estimate and 90-day roadmap | In architecture document |
+| Worker graceful job draining | Shutdown configuration documented; application behavior not verified |
+| Database migration procedure | Documented in `docs/database-migration-runbook.md`; not executed against a live database |
+| 15x load test and zero-error evidence | Not run |
+| Database backup and restore test | Not performed |
+| Multi-cloud dedicated tenant and EU data residency | Design only; not validated |
+| Production failover | Not implemented or tested |
 
-## 4. Quick path
-1. Create a GitHub repository and upload this folder's contents.
-2. Replace image placeholders and add the real app source/build context if supplied.
-3. Review `k8s/` and `docs/architecture.md`.
-4. Use `kubectl apply --dry-run=client -f k8s/` only after installing kubectl; validate each file separately if the local client rejects directory input.
-5. Do not apply Terraform or create paid AWS resources without reviewing the plan and cost.
-6. Add screenshots/logs only for tests actually performed.
+A successful manifest validation does not prove that the actual application runs correctly or meets production SLOs.
 
-## 5. Interview honesty
-Be ready to explain which items are working code, which are design decisions, and which remain unverified. This repo intentionally avoids claiming that production-scale availability, 15x scaling, failover, or rollback was proven.
+## 4. Repository Guide
+OAOAOAOAOAOAOAOAOAOA
+OAOAOAOAOAOAOAOAOAOA| Path | Purpose |
+|---|---|
+| `.github/workflows/ci.yml` | CI validation and conditional image build/scan template |
+| `.github/scripts/validate-k8s.sh` | Basic structural validation of Kubernetes YAML manifests |
+| `k8s/api.yaml` | API Deployment, Service, and PodDisruptionBudget |
+| `k8s/worker.yaml` | Worker Deployment and shutdown configuration |
+| `k8s/data-services.yaml` | Demo-only Redis and PostgreSQL resources |
+| `k8s/secrets.example.yaml` | Example secret configuration; do not put real credentials in Git |
+| `terraform/README.md` | Terraform starter documentation |
+| `docs/architecture.md` | Architecture decisions, rollout strategy, SLOs, risks, costs, and roadmap |
+| `docs/database-migration-runbook.md` | PostgreSQL expand/contract migration and recovery procedure |
+| `docs/evidence.md` | Evidence of checks actually performed and outstanding limitations |
+
+## 5. Quick Validation
+
+Run the local structural validator:
+
+```bash
+bash .github/scripts/validate-k8s.sh
+
+Validate a manifest against the configured Kubernetes API server without applying it:
+
+kubectl apply --dry-run=server -f k8s/worker.yaml
+
+The server-side dry-run requires a reachable cluster and validates only the supplied manifest. It does not deploy the workload or verify application behavior.
+
+Before deploying:
+
+Replace image placeholders with actual immutable image references.
+Review all Kubernetes manifests and secret references.
+Configure the required secrets through an approved secrets manager.
+Review the Terraform plan and estimated cloud cost before provisioning infrastructure.
+Confirm database persistence, backups, migration compatibility, and recovery procedures.
+Capture evidence only for tests actually performed.
+6. Production Readiness Gaps
+
+The following work remains before production use:
+
+Provider-specific infrastructure modules and a second cloud deployment target.
+Managed, durable PostgreSQL and Redis-compatible services with appropriate availability, security, and backup configuration.
+Real application build, security scan, immutable image digest promotion, and environment-specific deployment automation.
+Progressive traffic shifting with metric-based promotion and automated rollback.
+Application-supported graceful shutdown and worker job draining.
+Automated database migration checks, backup validation, and restore drills.
+Load testing, SLO dashboards, alert validation, tenant isolation, and regional failover testing.
+7. Interview Honesty
+
+Be prepared to distinguish implemented code, validated behavior, design decisions, and unverified work. This repository does not claim that production-scale availability, 15x scaling, zero-downtime deployment, disaster recovery, or automatic rollback has been proven.
