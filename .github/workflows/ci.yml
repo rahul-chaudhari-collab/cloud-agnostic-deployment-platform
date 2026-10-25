@@ -1,0 +1,61 @@
+name: validate-build-scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate repository structure
+        run: |
+          test -f README.md
+          test -f docs/architecture.md
+          test -d k8s
+      - name: YAML syntax check
+        run: |
+          python - <<'PY'
+          import pathlib
+          try:
+              import yaml
+          except ImportError:
+              print("PyYAML unavailable; structural check only")
+              raise SystemExit(0)
+          for p in pathlib.Path("k8s").glob("*.yaml"):
+              list(yaml.safe_load_all(p.read_text()))
+              print("Parsed", p)
+          PY
+
+  image-build-and-scan-template:
+    if: ${{ vars.BUILD_REAL_APP == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          push: false
+          tags: immverse-assignment:${{ github.sha }}
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: immverse-assignment:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      - name: Explain digest promotion requirement
+        run: echo "Production promotion should use the same immutable image digest across environments."
